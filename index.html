@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HabitFlow – Interactive Live Deck</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+<style>
+:root{--bg:#06202B;--card:#0E3442;--v:#0EA5E9;--p:#F43F5E;--a:#FBBF24;--m:#10B981;--w:#fff;--g:#9CC3CC;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06202B}}
+:root[data-theme="dark"]{--bg:#06202B}
+html,body{height:100%;margin:0}
+body{background:#031219;color:var(--w);font-family:Calibri,Arial,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden;user-select:none;-webkit-user-select:none}
+.stage{position:relative;width:min(100vw,177.78vh);height:min(56.25vw,100vh);font-size:min(1vw,1.7778vh);background:var(--bg);overflow:hidden}
+.stage:before{content:"";position:absolute;left:0;top:0;bottom:0;width:1.4em;background:linear-gradient(var(--v),var(--m));z-index:3}
+.s{position:absolute;inset:0;padding:4.6em 7em 0 8em;visibility:hidden}.s.on{visibility:visible}
+h1,h2{font-family:Poppins,'Segoe UI',Arial,sans-serif;margin:0}h2{font-size:3.9em;font-weight:700;margin-bottom:.1em}
+.sub{color:var(--g);font-size:2.1em;margin:0}
+.in{opacity:0}.on .in{animation:up .7s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--d,0)*.16s + .1s)}
+@keyframes up{from{opacity:0;transform:translateY(3em) scale(.95)}to{opacity:1;transform:none}}
+.orb{position:absolute;border-radius:50%;transition:transform .25s ease-out;pointer-events:none}
+.orb i{display:block;width:100%;height:100%;border-radius:50%;background:inherit;animation:fl 6s ease-in-out infinite alternate}
+@keyframes fl{to{transform:translate(-2em,3em) scale(1.08)}}
+.row{display:flex;gap:2.4em}
+.card{background:var(--card);border-radius:1.5em;padding:2em;flex:1;transition:transform .25s,box-shadow .25s,opacity .3s,background .3s}
+.click{cursor:pointer}.click:hover{transform:translateY(-.5em) scale(1.03);box-shadow:0 1em 3em rgba(14,165,233,.35)}
+.click:active{transform:scale(.96)}
+.num{font-family:Poppins,'Segoe UI',Arial,sans-serif;font-size:4em;font-weight:700}
+.hint{color:var(--g);font-size:1.7em;font-style:italic;margin-top:1em;animation:blink 2s infinite}@keyframes blink{50%{opacity:.4}}
+/* flip */
+.flip{perspective:90em;cursor:pointer;flex:1}.fi{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d}
+.flip.f .fi{transform:rotateY(180deg)}.fr,.bk{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:1.5em;padding:1.8em;background:var(--card)}
+.bk{transform:rotateY(180deg);background:var(--v)}.flip:hover .fr{box-shadow:0 0 0 .2em var(--v)}
+.fr h3,.bk h3{font-size:2.3em;margin:.2em 0 .3em}.fr p,.bk p{font-size:1.75em;margin:0;color:var(--g)}.bk p{color:#fff}
+/* demo */
+.tick{width:17em;height:17em;border-radius:50%;border:0;background:radial-gradient(circle at 30% 30%,#38bdf8,var(--v));color:#fff;font-size:3.6em;font-weight:700;cursor:pointer;animation:beat 1.6s infinite;box-shadow:0 0 5em rgba(14,165,233,.6)}
+.tick:active{transform:scale(.9)}@keyframes beat{50%{transform:scale(1.07)}}
+.stat{font-size:2em;color:var(--g)}.stat b{display:block;font-family:Georgia,serif;font-size:2.8em;color:#fff}
+.bump{animation:bump .4s}@keyframes bump{40%{transform:scale(1.5);color:var(--a)}}
+.pbar{height:1.6em;border-radius:1em;background:#0a2630;overflow:hidden}.pbar>div{height:100%;width:0;background:linear-gradient(90deg,var(--v),var(--m));transition:width .5s}
+.btn{background:var(--card);border:.15em solid var(--v);color:#fff;border-radius:3em;padding:.5em 1.6em;font-size:1.8em;cursor:pointer;font-family:inherit}.btn:hover{background:var(--v)}
+.toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-family:Georgia,serif;font-size:8em;font-weight:700;color:var(--a);text-shadow:0 0 .4em rgba(251,191,36,.8);pointer-events:none;z-index:9;white-space:nowrap}
+.toast.show{animation:toast 1.4s forwards}@keyframes toast{30%{transform:translate(-50%,-50%) scale(1)}80%{transform:translate(-50%,-50%) scale(1);opacity:1}to{transform:translate(-50%,-70%) scale(1);opacity:0}}
+/* streak */
+.days{display:flex;gap:1.2em}.day{flex:1;text-align:center;font-size:1.5em;color:var(--g)}
+.sq{height:6.4em;border-radius:1.1em;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.3em;margin-bottom:.4em;cursor:pointer;transition:transform .2s,background .3s;color:#fff}
+.sq:hover{transform:translateY(-.4em)}.sq.d{background:var(--v)}.sq.m{background:#3b1220;color:var(--p);border:.15em solid var(--p)}.sq.r{background:var(--a);color:var(--bg)}.sq.p{background:var(--card);border:.2em dashed var(--p);animation:beat 1.4s infinite}
+/* slider */
+input[type=range]{width:100%;accent-color:var(--p);height:2em;cursor:pointer}
+.bars{display:flex;align-items:flex-end;gap:1.2em;height:17em}.bar{flex:1;background:#164b5e;border-radius:.5em .5em 0 0;transition:background .3s,transform .3s;display:flex;align-items:flex-start;justify-content:center;color:#fff;font-size:1.5em;padding-top:.3em}.bar.on2{background:var(--p);transform:scaleY(1.04)}
+.bdg{width:4.6em;height:4.6em;border-radius:50%;background:#0a2630;display:flex;align-items:center;justify-content:center;font-size:2em;filter:grayscale(1);opacity:.4;transition:.4s}.bdg.lit{filter:none;opacity:1;background:var(--a);box-shadow:0 0 1.5em var(--a);transform:scale(1.1)}
+/* arch */
+.arch{position:relative;display:flex;gap:2.4em;margin-top:1.5em}.box{flex:1;height:11em;border-radius:1.4em;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:2.1em;font-weight:700;cursor:pointer;opacity:.55;transition:.3s}
+.box small{font-size:.6em;font-weight:400}.box.act{opacity:1;transform:scale(1.1);box-shadow:0 0 3em currentColor}
+.pk{position:absolute;top:-1.8em;width:2.6em;height:2.6em;border-radius:50%;background:#fff;box-shadow:0 0 2em #fff;transition:left .8s ease-in-out;left:0}
+.cap{height:3em;font-size:2.1em;color:var(--a);margin-top:1.2em;text-align:center}
+/* er */
+.er{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6em;margin-top:1.4em}.er .card{padding:1.2em 1.4em;border-top:.5em solid var(--c)}.er h4{margin:0 0 .3em;font-size:2.1em;color:var(--c)}.er p{margin:0;font-size:1.45em;color:var(--g)}
+.er .dim{opacity:.25}.er .sel{background:#14566e;transform:scale(1.07)}.er .rel{box-shadow:0 0 0 .25em var(--a)}
+/* sec */
+.sec{position:relative;min-height:10em;padding:1.4em 1.8em;flex:0 0 calc(33.33% - 1.6em)}.sec h3{font-size:2.3em;margin:0 0 .25em;color:#fff}.sec p{font-size:1.75em;margin:0;color:#e3f6fb;line-height:1.25}
+.sec.atk{background:#4a1220;animation:shake .4s 2}.sec.atk h3,.sec.atk p{color:#ff8da1}.sec.blk{background:#0b4d3a}.sec.blk h3{color:var(--m)}.sec.blk p{color:#d7ffe9}
+@keyframes shake{25%{transform:translateX(-.7em)}75%{transform:translateX(.7em)}}
+.nav{position:absolute;bottom:1.6em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:1em;z-index:6}
+.dot{width:1.1em;height:1.1em;border-radius:50%;background:#1d5367;cursor:pointer;border:0;padding:0}.dot.on{background:var(--p);transform:scale(1.3)}
+.arr{background:var(--card);color:#fff;border:0;width:3.4em;height:3.4em;border-radius:50%;font-size:1.5em;cursor:pointer}.arr:hover{background:var(--v)}
+.pb{position:absolute;top:0;left:0;height:.5em;background:linear-gradient(90deg,var(--p),var(--a));transition:width .5s;z-index:7}
+canvas{position:absolute;inset:0;pointer-events:none;z-index:8;width:100%;height:100%}
+.badge{display:inline-block;border:.12em solid var(--v);color:#7dd3fc;background:rgba(14,165,233,.12);padding:.5em 1.5em;border-radius:3em;font-size:1.5em;letter-spacing:.14em;font-weight:600;font-family:Poppins,'Segoe UI',Arial,sans-serif;margin-bottom:.9em}
+.ttl{font-family:Poppins,'Segoe UI',Arial,sans-serif;font-weight:800;font-size:10.5em;line-height:1.05;margin:0;letter-spacing:-.02em;background:linear-gradient(90deg,#fff 30%,#7dd3fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{font-family:Poppins,'Segoe UI',Arial,sans-serif;font-weight:600;font-size:3.4em;color:var(--a);margin:.1em 0 0}
+.bar2{width:12em;height:.5em;border-radius:1em;background:linear-gradient(90deg,var(--p),var(--a));margin:1.2em 0}
+.desc{font-size:2.3em;color:#d6eef5;max-width:55em;line-height:1.4;margin:0}
+.team{display:flex;gap:2em;margin-top:2em}
+.team>div{background:rgba(14,52,66,.92);padding:1.1em 1.6em;border-radius:1.2em;border-left:.4em solid var(--v)}
+.team small{display:block;color:var(--a);font-size:1.3em;letter-spacing:.15em;font-weight:700;margin-bottom:.4em}
+.team b{display:block;font-size:1.9em;font-weight:600;line-height:1.5;color:#fff}
+.team span{color:var(--g);font-size:1.5em}
+.team>.flip{background:none;padding:0;border-left:0}.tm{height:13em;flex:1}.tm .fr{border-left:.4em solid var(--v);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.tm .fr h3{font-size:2.4em;margin:.1em 0}.tm .bk{border-radius:1.2em;display:flex;flex-direction:column;justify-content:center}.tm .bk small{color:#fff;opacity:.85;font-size:1.3em;letter-spacing:.15em;font-weight:700;margin-bottom:.3em;display:block}.tm .bk b{display:block;font-size:1.75em;line-height:1.35;color:#fff}.tm .bk span{font-size:1.5em;color:#e3f6fb}
+.btn.snd{position:absolute;top:3.2em;right:4em;z-index:6;font-size:1.5em;background:rgba(14,52,66,.9)}
+.fs{flex:0 0 calc(25% - 1.8em);height:11.5em}.fs .fr,.fs .bk{padding:1.2em 1.4em}.fs .bk p{font-size:1.5em;line-height:1.35}.tg{font-size:1.2em;font-weight:700;letter-spacing:.14em;margin-top:.5em}.ic{font-size:2.8em;line-height:1.1}.fs h3{font-size:1.7em!important;margin:.1em 0 0!important}
+</style></head><body>
+<div class="stage" id="st"><div class="pb" id="pb"></div><canvas id="cv"></canvas><div class="toast" id="toast">LEVEL UP!</div>
+
+<!-- 1 -->
+<section class="s on" id="s1">
+<div class="orb" data-k="3" style="width:34em;height:34em;right:5em;top:4em;background:var(--v);opacity:.5"><i></i></div>
+<div class="orb" data-k="-5" style="width:19em;height:19em;right:33em;top:31em;background:var(--p);opacity:.55"><i style="animation-delay:-2s"></i></div>
+<div class="orb" data-k="7" style="width:9em;height:9em;right:7em;top:35em;background:var(--a);opacity:.8"><i style="animation-delay:-4s"></i></div>
+<div class="badge in" style="--d:0;margin-top:1.4em">MINOR PROJECT · DIPLOMA IN CSE · BATCH 2024-27</div>
+<h1 class="in ttl" style="--d:1">HabitFlow</h1>
+<p class="in tag" style="--d:2">Tick once. Build forever.</p><div class="in bar2" style="--d:3"></div>
+<p class="in desc" style="--d:4">A habit tracker web application with streaks, XP, rest days and live analytics.</p>
+<div class="in team" style="--d:5"><div class="flip tm"><div class="fi"><div class="fr"><div class="ic">👨‍💻</div><h3>Creators</h3><div class="tg" style="color:var(--a)">CLICK TO REVEAL</div></div><div class="bk"><small>THE CREATORS</small><b>Ayush Raj</b><b>Yubraj</b><b>Arnav Jha Bhaskar</b></div></div></div><div class="flip tm"><div class="fi"><div class="fr"><div class="ic">🎓</div><h3>Guide</h3><div class="tg" style="color:var(--a)">CLICK TO REVEAL</div></div><div class="bk"><small>OUR GUIDE</small><b>Prof. Ashish Kumar</b><span>HOD, CSE Department</span></div></div></div><div class="flip tm"><div class="fi"><div class="fr"><div class="ic">💡</div><h3>Innovators</h3><div class="tg" style="color:var(--a)">CLICK TO REVEAL</div></div><div class="bk"><small>BORN AT</small><b>Government Polytechnic Vaishali</b><span>Diploma in CSE · Batch 2024-27</span></div></div></div></div>
+<p class="hint in" style="--d:7;margin-top:.6em;font-size:1.5em">Click the cards to flip them · use › or the arrow keys to continue</p><button class="btn snd in" id="wl" style="--d:8">🔊 Play welcome</button></section>
+
+<!-- 2 -->
+<section class="s"><h2 class="in">Why habits fail</h2><p class="sub in" style="--d:1">Progress is invisible, so effort is silently abandoned.</p>
+<div class="row" style="margin-top:2.6em;height:25em">
+<div class="flip in" style="--d:3"><div class="fi"><div class="fr"><div class="num" style="color:var(--p)">01</div><h3>No feedback loop</h3><p>No streaks, charts or rewards. Effort feels pointless.</p></div><div class="bk"><h3>HabitFlow fix</h3><p>Streaks, XP, levels, heat-map and charts show progress instantly.</p></div></div></div>
+<div class="flip in" style="--d:5"><div class="fi"><div class="fr"><div class="num" style="color:var(--a)">02</div><h3>Rigid rules</h3><p>One planned rest day breaks the whole streak.</p></div><div class="bk"><h3>HabitFlow fix</h3><p>Choose rest days. They never break the chain.</p></div></div></div>
+<div class="flip in" style="--d:7"><div class="fi"><div class="fr"><div class="num" style="color:var(--m)">03</div><h3>Privacy and cost</h3><p>Subscriptions, and your routine on someone else’s server.</p></div><div class="bk"><h3>HabitFlow fix</h3><p>Free, local SQLite data, CSV export, delete anytime.</p></div></div></div></div>
+<p class="hint in" style="--d:9">Click a card to flip it</p></section>
+
+<!-- 3 -->
+<section class="s"><h2 class="in">One tick. Then it’s automatic</h2>
+<div class="row" style="margin-top:1.6em;align-items:center;gap:5em">
+<div class="in" style="--d:2;text-align:center"><button class="tick" id="tk">TICK</button><p class="hint" style="margin-top:1.2em">Press it: +10 XP</p></div>
+<div style="flex:1"><div class="row in" style="--d:3;gap:4em"><div class="stat">Streak<b id="stk">0</b></div><div class="stat">XP<b id="sxp">0</b></div><div class="stat">Level<b id="slv">1</b></div></div>
+<p class="sub" style="margin:1.2em 0 .5em;font-size:1.8em" id="slab">0 / 100 XP to Level 2</p><div class="pbar in" style="--d:4"><div id="sbar"></div></div>
+<div class="row" style="margin-top:2em;gap:1.4em"><button class="btn" id="ff">+7 days ⏩</button><button class="btn" id="rs">Reset</button></div></div></div></section>
+
+<!-- 4 -->
+<section class="s"><h2 class="in">Built for real life</h2><p class="sub in" style="--d:1">Every feature removes friction from one daily tick.</p>
+<div class="row" style="margin-top:2em;height:13em"><div class="flip in" style="--d:2"><div class="fi"><div class="fr"><h3 style="color:var(--v)">Rest days</h3><p>Weekdays that never break a streak</p></div><div class="bk"><h3>Why it matters</h3><p>Sunday off = still a perfect week.</p></div></div></div>
+<div class="flip in" style="--d:3"><div class="fi"><div class="fr"><h3 style="color:var(--p)">Count + checklist</h3><p>8 glasses of water, or step by step</p></div><div class="bk"><h3>Flexible</h3><p>Partial progress is shown, not lost.</p></div></div></div>
+<div class="flip in" style="--d:4"><div class="fi"><div class="fr"><h3 style="color:var(--a)">Heat-map</h3><p>53-week activity + monthly history</p></div><div class="bk"><h3>See patterns</h3><p>Best and worst weekday at a glance.</p></div></div></div></div>
+<div class="row" style="margin-top:2em;height:13em"><div class="flip in" style="--d:5"><div class="fi"><div class="fr"><h3 style="color:var(--m)">Friends board</h3><p>Follow, compete, share card</p></div><div class="bk"><h3>Social</h3><p>Public profile + shareable SVG card.</p></div></div></div>
+<div class="flip in" style="--d:6"><div class="fi"><div class="fr"><h3 style="color:var(--p)">Hindi / English</h3><p>Language switch and dark mode</p></div><div class="bk"><h3>Inclusive</h3><p>Regional-language interface.</p></div></div></div>
+<div class="flip in" style="--d:7"><div class="fi"><div class="fr"><h3 style="color:var(--v)">Installable PWA</h3><p>Works offline on any device</p></div><div class="bk"><h3>App-like</h3><p>Home-screen install, offline page.</p></div></div></div></div>
+<p class="hint in" style="--d:9;margin-top:.6em">Click any card to flip it</p></section>
+
+<!-- 5 -->
+<section class="s"><h2 class="in">Rest days never break the chain</h2><p class="sub in" style="--d:1">Click squares to mark days done or missed. Sundays are rest days.</p>
+<div class="days in" style="--d:3;margin-top:2.4em" id="dy"></div>
+<div class="card in row" style="--d:5;align-items:center;margin-top:1.6em;padding:1.2em 2em;gap:1.6em;flex:none"><span class="num" id="sk" style="color:var(--a)">0</span><span style="font-size:2em" id="sm"></span></div></section>
+
+<!-- 6 -->
+<section class="s"><h2 class="in">Gamification that stays honest</h2>
+<div class="in" style="--d:1;font-size:2.4em;margin:.2em 0 .4em">XP <b id="xv" style="color:var(--a)">1200</b> → Level <b id="lv" style="color:var(--p)">4</b> <span style="color:var(--g);font-size:.7em">= ⌊√(XP / 100)⌋ + 1</span></div>
+<input class="in" style="--d:2" type="range" id="xr" min="0" max="5000" step="10" value="1200">
+<div class="bars in" style="--d:3;margin-top:1.4em" id="br"></div>
+<div class="row in" style="--d:4;margin-top:1.6em;gap:1.4em;justify-content:center" id="bd"></div></section>
+
+<!-- 7 -->
+<section class="s"><h2 class="in">Lean layered architecture</h2><p class="sub in" style="--d:1">Python + Flask + SQLite. Press the button to send a request through the layers.</p>
+<div class="arch in" style="--d:3" id="ar"><div class="pk" id="pk"></div>
+<div class="box" style="background:var(--v)">Browser<small>HTML · CSS · JS · PWA</small></div><div class="box" style="background:var(--p)">Flask routes<small>app.py + CSRF</small></div><div class="box" style="background:var(--a);color:var(--bg)">services.py<small>streaks · XP · coach</small></div><div class="box" style="background:var(--m)">SQLite<small>8 tables</small></div></div>
+<div class="cap" id="cp">Click a layer, or send a request</div><div style="text-align:center"><button class="btn" id="sd">▶ Send request</button></div></section>
+
+<!-- 8 -->
+<section class="s"><h2 class="in">Database: 8 tables, zero orphans</h2><p class="sub in" style="--d:1">Click a table to light up what it connects to.</p>
+<div class="er in" style="--d:3" id="er"></div><p class="cap" style="font-size:1.9em;margin-top:.8em" id="ec">Normalised to 3NF · ON DELETE CASCADE · streaks are derived, never stored</p></section>
+
+<!-- 9 -->
+<section class="s" style="padding-top:2.8em"><h2 class="in">Security by design</h2><p class="sub in" style="--d:1">Click a card to launch an attack.</p>
+<div class="row in" style="--d:3;margin-top:.8em;flex-wrap:wrap;justify-content:center;gap:1.4em 2em" id="sc"></div></section>
+
+<section class="s"><h2 class="in">Future scope</h2><p class="sub in" style="--d:1">Where HabitFlow goes next. Click a card to see the plan.</p>
+<div class="row" id="fsr" style="margin-top:1.6em;flex-wrap:wrap;gap:2em 2.4em"></div>
+<p class="in" style="--d:12;font-size:1.8em;color:var(--g);margin:1em 0 0">Also planned: two-factor login, e-mail verification and password reset, more languages, and better screen-reader support.</p></section>
+
+<!-- 11 -->
+<section class="s"><div class="orb" style="width:38em;height:38em;right:-6em;top:-9em;background:var(--v);opacity:.45"><i></i></div>
+<h1 class="in" style="font-size:7.6em;margin-top:.6em;line-height:1.1">Small actions.<br>Lasting habits.</h1>
+<p class="sub in" style="--d:3;margin-top:.8em;max-width:75em;font-size:1.9em">Next: native apps, push reminders, REST API, cloud sync, 2FA and wearable logging.</p>
+<div class="card click in" id="ty" style="--d:5;flex:none;background:var(--p);text-align:center;font-size:3.2em;font-weight:700;margin-top:1.2em;padding:.8em">Thank you · Questions? 🎉</div></section>
+
+<div class="nav"><button class="arr" id="pv">‹</button><span id="nv" style="display:flex;gap:1em"></span><button class="arr" id="nx">›</button></div></div>
+<script>
+const $=q=>document.querySelector(q),S=[...document.querySelectorAll('.s')],st=$('#st');let cur=0;
+/* confetti */
+const cv=$('#cv'),cx=cv.getContext('2d');let ps=[],raf=0;
+function fit(){cv.width=st.clientWidth;cv.height=st.clientHeight}addEventListener('resize',fit);fit();
+function boom(x,y,n=90){const C=['#0EA5E9','#F43F5E','#FBBF24','#10B981','#fff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,v=3+Math.random()*9;ps.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-5,c:C[i%5],s:5+Math.random()*7,l:90+Math.random()*60})}if(!raf)loop()}
+function loop(){cx.clearRect(0,0,cv.width,cv.height);ps=ps.filter(p=>p.l>0);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.28;p.vx*=.99;p.l--;cx.fillStyle=p.c;cx.fillRect(p.x,p.y,p.s,p.s*.6)});raf=ps.length?requestAnimationFrame(loop):0}
+const pos=e=>{const r=st.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+/* nav */
+S.forEach((_,k)=>{const b=document.createElement('button');b.className='dot';b.onclick=()=>go(k);$('#nv').appendChild(b)});
+function go(n){cur=Math.max(0,Math.min(S.length-1,n));S.forEach(s=>s.classList.remove('on'));void st.offsetWidth;S[cur].classList.add('on');
+[...$('#nv').children].forEach((d,k)=>d.classList.toggle('on',k===cur));$('#pb').style.width=(cur+1)/S.length*100+'%';
+S[cur].querySelectorAll('.flip').forEach(f=>f.classList.remove('f'));if(cur!=0&&window.speechSynthesis)speechSynthesis.cancel();if(cur==4)stk();if(cur==5)xp6();if(cur==6)cap('Click a layer, or send a request');}
+$('#pv').onclick=()=>go(cur-1);$('#nx').onclick=()=>go(cur+1);
+addEventListener('keydown',e=>{if(['ArrowRight','PageDown'].includes(e.key))go(cur+1);if(['ArrowLeft','PageUp'].includes(e.key))go(cur-1)});
+let x0=null;st.addEventListener('touchstart',e=>{x0=/INPUT|BUTTON/.test(e.target.tagName)?null:e.touches[0].clientX});
+st.addEventListener('touchend',e=>{if(x0===null)return;const d=e.changedTouches[0].clientX-x0;if(Math.abs(d)>50)go(cur+(d<0?1:-1));x0=null});
+/* s1 */
+$('#s1').addEventListener('click',e=>{const[x,y]=pos(e);boom(x,y);if(!played){played=1;say()}});
+st.addEventListener('mousemove',e=>{if(cur!=0)return;const[x,y]=pos(e),dx=x/st.clientWidth-.5,dy=y/st.clientHeight-.5;S[0].querySelectorAll('.orb').forEach(o=>o.style.transform=`translate(${dx*+o.dataset.k*6}em,${dy*+o.dataset.k*6}em)`)});
+/* flip */
+document.querySelectorAll('.flip').forEach(f=>f.onclick=()=>f.classList.toggle('f'));
+/* s3 demo */
+let days=0,xp=0;const lvl=x=>Math.floor(Math.sqrt(x/100))+1;
+function bump(el){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}
+function demo(add,e){const L0=lvl(xp);days+=add;xp+=add*10;const L=lvl(xp),a=100*(L-1)**2,b=100*L*L;
+$('#stk').textContent=days;$('#sxp').textContent=xp;$('#slv').textContent=L;$('#sbar').style.width=((xp-a)/(b-a)*100)+'%';$('#slab').textContent=`${xp-a} / ${b-a} XP to Level ${L+1}`;
+['#stk','#sxp'].forEach(q=>bump($(q)));
+if(L>L0){bump($('#slv'));const t=$('#toast');t.classList.remove('show');void t.offsetWidth;t.classList.add('show');boom(st.clientWidth/2,st.clientHeight*.4,160)}else if(e){const r=e.target.getBoundingClientRect(),s=st.getBoundingClientRect();boom(r.left-s.left+r.width/2,r.top-s.top+r.height/2,25)}}
+$('#tk').onclick=e=>demo(1,e);$('#ff').onclick=()=>demo(7);$('#rs').onclick=()=>{days=0;xp=0;demo(0);$('#slab').textContent='0 / 100 XP to Level 2'};
+/* s5 streak */
+const N=['Wed','Thu','Fri','Sat','Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun','Mon','Tue'],stt=N.map((n,i)=>n=='Sun'?'r':i==13?'p':'d');
+const dy=$('#dy');N.forEach((n,i)=>{const c=document.createElement('div');c.className='day';c.innerHTML='<div class="sq"></div>'+n;c.firstChild.onclick=()=>{if(stt[i]=='r')return msg('Rest day: never breaks the streak');stt[i]=i==13?(stt[i]=='p'?'d':'p'):(stt[i]=='d'?'m':'d');stk()};dy.appendChild(c)});
+let note='';function msg(t){note=t;stk()}
+function stk(){let s=0;for(let i=13;i>=0;i--){if(stt[i]=='d')s++;else if(stt[i]=='m')break}
+[...dy.children].forEach((c,i)=>{const q=c.firstChild;q.className='sq '+stt[i];q.textContent={d:'DONE',m:'MISS',r:'REST',p:'?'}[stt[i]]});
+const e=$('#sk');if(+e.textContent!=s){e.textContent=s;bump(e);if(s&&s%5==0)boom(st.clientWidth/2,st.clientHeight*.7,50)}
+$('#sm').textContent=note||(stt[13]=='p'?'day streak. Unfinished today never breaks it.':'day streak. Today is done!');note=''}
+/* s6 slider */
+const br=$('#br'),bd=$('#bd');for(let i=1;i<=8;i++){const b=document.createElement('div');b.className='bar';b.style.height=(8+Math.min(1,(i-1)**2/49)*92)+'%';b.textContent='L'+i;br.appendChild(b)}
+['🔥','⭐','🏆','🎯','🌱','💪','📚','🌙','🚀','👑'].forEach(x=>{const d=document.createElement('div');d.className='bdg';d.textContent=x;bd.appendChild(d)});
+function xp6(){const x=+$('#xr').value,L=lvl(x);$('#xv').textContent=x;$('#lv').textContent=L;[...br.children].forEach((b,i)=>b.classList.toggle('on2',i==L-1));[...bd.children].forEach((b,i)=>b.classList.toggle('lit',x>=(i+1)*500))}
+$('#xr').oninput=xp6;xp6();
+/* s7 arch */
+const bx=[...document.querySelectorAll('.box')],pk=$('#pk');
+const T=['Browser sends POST with CSRF token','Flask verifies token and loads the user','services.py computes streak, XP, level','SQLite saves the log (UNIQUE habit + day)','Page rendered and returned with security headers'];
+function cap(t){$('#cp').textContent=t}
+function at(i){bx.forEach((b,k)=>b.classList.toggle('act',k==i));if(i>=0&&i<4){pk.style.left=(bx[i].offsetLeft+bx[i].offsetWidth/2-pk.offsetWidth/2)+'px';cap(T[i])}}
+bx.forEach((b,i)=>b.onclick=()=>at(i));
+$('#sd').onclick=()=>{let i=0;const f=()=>{if(i<4){at(i);i++;setTimeout(f,1100)}else{at(0);cap(T[4]);boom(st.clientWidth/2,st.clientHeight*.5,40)}};f()};
+/* s8 ER */
+const TB=[['users','id · username · password_hash',['habits','goals','journal','follows'],'--v'],['habits','user_id · name · rest_days',['users','habit_items','logs','goals'],'--p'],['habit_items','habit_id · title',['habits','item_logs'],'--a'],['logs','habit_id · day (UNIQUE)',['habits'],'--m'],['item_logs','item_id · day (UNIQUE)',['habit_items'],'--m'],['goals','user_id · habit_id · target',['users','habits'],'--a'],['journal','user_id · day · mood',['users'],'--p'],['follows','user_id · friend_id',['users'],'--v']];
+const er=$('#er');let sel=null;TB.forEach(t=>{const c=document.createElement('div');c.className='card click';c.style.setProperty('--c',`var(${t[3]})`);c.innerHTML=`<h4>${t[0]}</h4><p>${t[1]}</p>`;c.onclick=()=>{sel=sel===t[0]?null:t[0];ers()};er.appendChild(c)});
+function ers(){const t=TB.find(x=>x[0]==sel);[...er.children].forEach((c,i)=>{const n=TB[i][0];c.classList.toggle('sel',n==sel);c.classList.toggle('rel',!!t&&t[2].includes(n));c.classList.toggle('dim',!!t&&n!=sel&&!t[2].includes(n))});$('#ec').textContent=t?`${t[0]} connects to: ${t[2].join(', ')}`:'Normalised to 3NF · ON DELETE CASCADE · streaks are derived, never stored'}
+/* s9 sec */
+[['SQL injection',"' OR 1=1 --",'Parameterised ? queries: input is never part of the SQL'],['CSRF','Forged POST from another site','Random token required on every POST: HTTP 400'],['XSS','<scr'+'ipt>alert(1)<'+'/scr'+'ipt>','Jinja2 auto-escaping prints it as harmless text'],['Password theft','Stolen database file','Only salted one-way hashes are stored'],['Data snooping','Opening another user’s /habit/999','Ownership check on every route: 404']].forEach(a=>{const c=document.createElement('div');c.className='card click sec';c.innerHTML=`<h3>${a[0]}</h3><p>Click to attack</p>`;let busy=0;c.onclick=()=>{if(busy)return;busy=1;c.className='card sec atk';c.innerHTML=`<h3>⚠ Attack!</h3><p>${a[1].replace(/</g,'&lt;')}</p>`;setTimeout(()=>{c.className='card sec blk';c.innerHTML=`<h3>✔ Blocked</h3><p>${a[2]}</p>`;boom(c.getBoundingClientRect().left-st.getBoundingClientRect().left+c.offsetWidth/2,c.getBoundingClientRect().top-st.getBoundingClientRect().top+30,25);setTimeout(()=>{c.className='card click sec';c.innerHTML=`<h3>${a[0]}</h3><p>Click to attack</p>`;busy=0},2600)},900)};$('#sc').appendChild(c)});
+/* s10 */
+[['📱','Mobile apps','NEXT','var(--m)','Android and iOS apps, or a Trusted Web Activity wrapper of the PWA.'],['🔔','Push reminders','NEXT','var(--m)','Server push, e-mail and WhatsApp reminders even when the app is closed.'],['🔌','REST API','NEXT','var(--m)','Token login so React, Flutter or smartwatch apps can connect.'],['🗄️','PostgreSQL','SOON','var(--a)','Server database with Flask-Migrate as the user base grows.'],['☁️','Cloud sync','SOON','var(--a)','Backup and sync across devices, with end-to-end encrypted export.'],['🤝','Social challenges','SOON','var(--a)','Group habits, weekly competitions and shared streaks with friends.'],['🧠','Smart insights','LATER','var(--p)','Machine learning to spot habits at risk, plus sleep vs study reports.'],['⌚','Wearables','LATER','var(--p)','Log steps, sleep and workouts automatically from fitness devices.']].forEach((a,i)=>{const f=document.createElement('div');f.className='flip fs in';f.style.setProperty('--d',i+2);f.innerHTML=`<div class="fi"><div class="fr"><div class="ic">${a[0]}</div><h3>${a[1]}</h3><div class="tg" style="color:${a[3]}">${a[2]}</div></div><div class="bk"><p>${a[4]}</p></div></div>`;f.onclick=()=>f.classList.toggle('f');$('#fsr').appendChild(f)});
+const WT="Welcome to HabitFlow, the habit tracker web application. We are Ayush Raj, Yubraj and Arnav Jha Bhaskar from Government Polytechnic Vaishali, guided by Professor Ashish Kumar. Tick once. Build forever. Let's begin.";let sp=false,played=false;
+function lab(){$('#wl').textContent=sp?'🔇 Stop':'🔊 Play welcome'}
+function say(){if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(WT),vs=speechSynthesis.getVoices();u.lang='en-IN';u.rate=.95;const v=vs.find(v=>/en[-_]IN/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang));if(v)u.voice=v;u.onstart=()=>{sp=true;lab()};u.onend=u.onerror=()=>{sp=false;lab()};speechSynthesis.speak(u)}
+$('#wl').onclick=e=>{e.stopPropagation();played=true;if(sp){speechSynthesis.cancel();sp=false;lab()}else say()};
+$('#ty').onclick=e=>{const[x,y]=pos(e);boom(x,y,160);boom(x-300,y,80);boom(x+300,y,80)};
+go(0);
+</script></body></html>
